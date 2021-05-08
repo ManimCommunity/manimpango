@@ -1,8 +1,19 @@
 from xml.sax.saxutils import escape
-from .utils import *
-from .enums import Alignment
+from ..utils import *
 import warnings
+from glib cimport *
+from cairo cimport *
+from pango cimport *
 import typing
+
+def raise_deprecation_warning(name):
+    msg = (
+        "`manimpango.{n}` is a deprecated. "
+        "This warning may have happen because you have used newer "
+        "version of manimpango with older version of Manim. "
+        "Either upgrade Manim or downgrade ManimPango."
+    ).format(n=name)
+    warnings.warn(msg, DeprecationWarning, stacklevel=2)
 
 class TextSetting:
     """Formatting for slices of a :class:`manim.mobject.svg.text_mobject.Text` object."""
@@ -15,6 +26,7 @@ class TextSetting:
         weight,
         line_num=-1
     ):
+        raise_deprecation_warning("TextSetting")
         self.start = start
         self.end = end
         self.font = font.encode('utf-8')
@@ -36,6 +48,7 @@ def text2svg(
     pango_width: typing.Union[int, None] = None,
 ) -> int:
     """Render an SVG file from a :class:`manim.mobject.svg.text_mobject.Text` object."""
+    raise_deprecation_warning("text2svg")
     cdef cairo_surface_t* surface
     cdef cairo_t* cr
     cdef PangoFontDescription* font_desc
@@ -135,6 +148,7 @@ def text2svg(
 class MarkupUtils:
     @staticmethod
     def validate(text: str) -> bool:
+        raise_deprecation_warning("MarkupUtils.validate")
         text_bytes = text.encode("utf-8")
         return pango_parse_markup(text_bytes, -1, 0, NULL, NULL, NULL, NULL)
 
@@ -160,6 +174,7 @@ class MarkupUtils:
         pango_width: typing.Union[int, None] = None,
     ) -> int:
         """Render an SVG file from a :class:`manim.mobject.svg.text_mobject.MarkupText` object."""
+        raise_deprecation_warning("MarkupUtils.text2svg")
         cdef cairo_surface_t* surface
         cdef cairo_t* context
         cdef PangoFontDescription* font_desc
@@ -259,9 +274,3 @@ class MarkupUtils:
         cairo_surface_destroy(surface)
         g_object_unref(layout)
         return file_name
-
-cpdef str pango_version():
-    return pango_version_string().decode('utf-8')
-
-cpdef str cairo_version():
-    return cairo_version_string().decode('utf-8')
